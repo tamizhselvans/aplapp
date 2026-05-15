@@ -1,0 +1,6 @@
+{
+  "name": "FieldPulse",
+  "description": "A real-time sports second-screen experience with gamified predictions, AR stat-vision, and synchronized haptic stadium heartbeats.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

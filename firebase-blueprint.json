@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "App user profile and stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "fanPower": { "type": "number", "description": "User's points/credits" },
+        "rank": { "type": "string", "enum": ["Rookie", "Veteran", "MVP", "Legend"] },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fanPower"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "Live sports match data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "homeTeam": { "type": "string" },
+        "awayTeam": { "type": "string" },
+        "homeScore": { "type": "number" },
+        "awayScore": { "type": "number" },
+        "status": { "type": "string", "enum": ["scheduled", "live", "finished"] },
+        "momentum": { "type": "number", "description": "Normalized momentum value -100 to 100" },
+        "lastEvent": { "type": "string" }
+      },
+      "required": ["id", "homeTeam", "awayTeam", "status"]
+    },
+    "Prediction": {
+      "title": "Prediction",
+      "description": "A live micro-prediction event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matchId": { "type": "string" },
+        "question": { "type": "string" },
+        "options": { "type": "array" },
+        "status": { "type": "string", "enum": ["open", "closed", "resolved"] },
+        "correctOption": { "type": "string" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "matchId", "question", "options", "status"]
+    },
+    "Response": {
+      "title": "Response",
+      "description": "User prediction response",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "predictionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "chosenOption": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isCorrect": { "type": "boolean" },
+        "rewardClaimed": { "type": "boolean" }
+      },
+      "required": ["id", "predictionId", "userId", "chosenOption"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/matches/{matchId}": {
+      "schema": "Match",
+      "description": "Live matches"
+    },
+    "/predictions/{predictionId}": {
+      "schema": "Prediction",
+      "description": "Micro-predictions"
+    },
+    "/predictions/{predictionId}/responses/{responseId}": {
+      "schema": "Response",
+      "description": "User responses to a prediction"
+    }
+  }
+}

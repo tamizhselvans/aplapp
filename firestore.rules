@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // User Rules
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'fanPower', 'displayName', 'rank', 'joinedAt']) &&
+             data.keys().size() <= 10 &&
+             data.uid == request.auth.uid &&
+             data.fanPower is number &&
+             data.fanPower >= 0 &&
+             data.displayName is string &&
+             data.rank is string &&
+             data.joinedAt is string;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().uid == existing().uid &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'fanPower']);
+    }
+
+    // Match Rules
+    match /matches/{matchId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      // No client-side writes for matches
+    }
+
+    // Prediction Rules
+    match /predictions/{predictionId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      // No client-side writes for predictions
+      
+      match /responses/{responseId} {
+        function isValidResponse(data) {
+          return data.keys().hasAll(['predictionId', 'userId', 'chosenOption']) &&
+                 data.userId == request.auth.uid &&
+                 data.predictionId == predictionId &&
+                 data.chosenOption is string && data.chosenOption.size() <= 50;
+        }
+        
+        allow get: if isSignedIn() && (isOwner(existing().userId));
+        allow create: if isSignedIn() && isValidResponse(incoming());
+        // Immutability: Responses cannot be changed once submitted
+      }
+    }
+  }
+}
