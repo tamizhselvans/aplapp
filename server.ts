@@ -54,26 +54,22 @@ async function startServer() {
     }
   }, 3000);
 
-  // Cricket API Integration
-  const CRICKET_API_KEY = process.env.CRICKET_API_KEY;
-  if (CRICKET_API_KEY) {
-    console.log("Cricket API Key detected. Starting cricket data sync...");
-    const fetchCricketData = async () => {
-      try {
-        const response = await fetch(`https://api.cricketdata.org/v1/currentMatches?apikey=${CRICKET_API_KEY}`);
-        const data: any = await response.json();
-        if (data && data.data) {
-          io.emit("cricket_matches", data.data);
-          console.log(`Broadcasted ${data.data.length} cricket matches`);
-        }
-      } catch (err) {
-        console.error("Failed to fetch cricket data:", err);
-      }
-    };
+  // Mock Cricket Data Integration
+  console.log("Starting mock cricket data sync...");
+  const mockCricketMatches = [
+    { name: "IND vs AUS - 1st Test", status: "Day 3 - Stumps" },
+    { name: "ENG vs PAK - 2nd ODI", status: "1st Innings" },
+    { name: "SA vs NZ - T20 International", status: "Delayed - Rain" }
+  ];
 
-    fetchCricketData();
-    setInterval(fetchCricketData, 5 * 60 * 1000); // Sync every 5 minutes to respect rate limits
-  }
+  const fetchCricketData = async () => {
+    io.emit("cricket_matches", mockCricketMatches);
+    console.log(`Broadcasted ${mockCricketMatches.length} mock cricket matches`);
+  };
+
+  fetchCricketData();
+  setInterval(fetchCricketData, 5 * 60 * 1000); // Sync every 5 minutes
+
 
   // Trigger micro-predictions occasionally
   setInterval(() => {

@@ -23,6 +23,7 @@ import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 export default function App() {
   const { socket, isConnected } = useSocket();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [momentumData, setMomentumData] = useState<number[]>(Array(50).fill(0));
   const [cricketMatches, setCricketMatches] = useState<any[]>([]);
@@ -33,6 +34,7 @@ export default function App() {
   // Auth Handling
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
+      setLoading(false);
       if (u) {
         setUser(u);
         const userRef = doc(db, 'users', u.uid);
@@ -124,7 +126,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0A0B0E] text-white font-sans selection:bg-[#00FF00]/30 overflow-x-hidden pb-20">
       {/* Auth Overlay */}
-      {!user && (
+      {!loading && !user && (
         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-6 text-center">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
